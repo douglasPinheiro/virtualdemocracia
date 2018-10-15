@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import Menu from "./components/menu/menu";
+import Menu from "./pages/menu/menu";
+import Layer1 from "./pages/home/layer-1/layer1";
+import Layer2 from "./pages/home/layer-2/layer2";
 import './App.scss';
 
 class App extends Component {
@@ -7,8 +9,10 @@ class App extends Component {
     return (
       <div className="App">
         <Menu />
-        <header className="App-header">
-        </header>
+        <div className="app-container">
+          <Layer1 />
+          <Layer2 />
+        </div>
       </div>
     );
   }

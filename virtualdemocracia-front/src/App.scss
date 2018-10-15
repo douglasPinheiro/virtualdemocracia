@@ -1,16 +1,14 @@
 .App {
-  background-image: url("/imgs/brazil.jpg");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  min-height: 100vh;
+  font-family: 'Arimo', sans-serif;
 
-  .App-header {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+  .app-container {
+    margin-top: 50px;
+  }
+
+  .home-layer {
+    padding: 40px;
+    text-align: center;
+
   }
 }
