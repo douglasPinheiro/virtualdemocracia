@@ -1,17 +1,17 @@
 #pre processamento
 #ler base
 #dividir em treino e teste
-#criar o modelo (rodar o svm)
+#criar o modelo (rodar o Random Forest)
 #analisar os resultados
 
-
+# install.packages("randomForest")
+library(randomForest)
 # install.packages('caTools')
 library(caTools)
 # install.packages('e1071')
 library(e1071)
 # install.packages('caret')
 library(caret)
-
 
 #carregar a base na variável
 base = read.csv2('pesquisa-artigo.csv')
@@ -38,29 +38,35 @@ divisao = sample.split(base_processed$Questao.11, SplitRatio=0.8)
 base_treino = subset(base_processed, divisao == TRUE)
 base_teste = subset(base_processed, divisao == FALSE)
 
-kernels = c("linear", "radial", "polynomial", "sigmoid")
-best_accuracy = 0
-best_kernel = ""
-best_cost = 0
+#classificador Random Forest
+classif_Random_Forest = randomForest(formula = Questao.11 ~ ., data = base_treino, importance = TRUE, ntree = 1000)
+prev_Random_Forest = predict(classif_Random_Forest, newdata = base_teste[-11])
 
-for(k in 1: 4) {
-  for (i in 1:10){
-    #classificador svm
-    classif_svm = svm(formula = Questao.11 ~ ., data = base_treino, type = 'C-classification', kernel = kernels[k], cost = i)
-    prev_svm = predict(classif_svm, newdata = base_teste[-11])
+matriz_confusao = table(base_teste$Questao.11, prev_Random_Forest)
+result_cm = confusionMatrix(matriz_confusao)
+resumo_cm = result_cm$overall
+acuracia_cm = resumo_cm['Accuracy']
 
-    matriz_confusao = table(base_teste[ ,11], prev_svm)
-    result_cm = confusionMatrix(matriz_confusao)
-    resumo_cm = result_cm$overall
-    acuracia_cm = resumo_cm['Accuracy']
-    
-    if(acuracia_cm > best_accuracy){
-      best_accuracy = acuracia_cm;
-      best_kernel = kernels[k]
-      best_cost = i
-    }
-  }
-}
+print(paste("A melhor acuracia foi de", best_accuracy))
 
-print(paste("A melhor acuracia foi de", best_accuracy, " com o kernel", best_kernel, "e com o custo", best_cost))
+##########################################################################################
+# installed.packages(tidyverse)
+library("tidyverse")
 
+# DESCOBRE A IMPORTANCIA DE CADA PERGUNTA PARA TOMADA DE DECISAO
+importance <- importance(classif_Random_Forest)
+
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[,'MeanDecreaseGini'],2))
+
+rankImportance <- varImportance %>%
+  mutate(Rank = paste0('#',dense_rank(desc(Importance))))
+
+ggplot(rankImportance, aes(x = reorder(Variables, Importance), 
+                           y = Importance, fill = Importance)) +
+  geom_bar(stat='identity') + 
+  labs(x = 'Variables') +
+  coord_flip() + 
+  theme_minimal()
+
+##########################################################################################
