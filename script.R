@@ -35,16 +35,30 @@ base_processed$Questao.11 = factor(base_processed$Questao.11, levels = c(1,2,3,4
 
 set.seed(1)
 
-divisao = sample.split(base_processed$Questao.11, SplitRatio=0.8)
+classidx <- ncol(base_processed)
+folds <- createFolds(base_processed[,classidx],10,FALSE)
 
-base_treino = subset(base_processed, divisao == TRUE)
-base_teste = subset(base_processed, divisao == FALSE)
+best_accuracy <- 0;
+best_div <- 0
 
-prev_ksvm = predict(classif_ksvm, newdata = base_teste[-11])
+for (i in 1:10){
+  base_treino <-(base_processed[folds!=i,])
+  base_teste <-(base_processed[folds==i,])
+  
+  
+  classif_ksvm = ksvm(Questao.11 ~ ., data = base_treino, kernel = "rbfdot", cost = 9)
+  
+  prev_ksvm = predict(classif_ksvm, newdata = base_teste[-11])
+  
+  matriz_confusao = table(base_teste[ ,11], prev_ksvm)
+  result_cm = confusionMatrix(matriz_confusao)
+  resumo_cm = result_cm$overall
+  acuracia_cm = resumo_cm['Accuracy']
+  
+  if(acuracia_cm > best_accuracy){
+    best_accuracy = acuracia_cm;
+    best_div = i;
+  }
+}
 
-matriz_confusao = table(base_teste[ ,11], prev_ksvm)
-result_cm = confusionMatrix(matriz_confusao)
-resumo_cm = result_cm$overall
-acuracia_cm = resumo_cm['Accuracy']
-
-paste("A melhor acurÃ¡cia foi de", acuracia_cm)
+paste("A melhor acurÃ¡cia foi de", best_accuracy, best_div)
